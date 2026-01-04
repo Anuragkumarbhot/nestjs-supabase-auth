@@ -1,4 +1,66 @@
-# nestjs-supabase-auth
+# WARPPOINT: Space War
+
+WARPPOINT: Space War is a large-scale multiplayer sci-fi action game built with **Godot Engine 4**.  
+Players engage in space combat, planetary warfare, and capital ship boarding while contributing to a persistent galaxy-scale conflict.
+
+---
+
+## 🚀 Overview
+
+WARPPOINT blends:
+- Space dogfights
+- Ground combat on hostile planets
+- Capital ship warfare and boarding missions
+- Persistent faction-driven galaxy wars
+
+Every mission affects the larger universe through a server-authoritative simulation designed for fairness, scalability, and long-term LiveOps support.
+
+---
+
+## 🛠 Engine & Tools
+
+- **Engine:** Godot Engine 4.x
+- **Scripting:** GDScript (primary), optional C# (Mono)
+- **Platforms:** PC (Windows/Linux) — scalable to others
+- **Version Control:** Git + Git LFS
+- **Build Style:** Headless server + client builds (planned)
+
+---
+
+## 🎮 Core Features
+
+### Multiplayer
+- Server-authoritative architecture
+- Squad-based gameplay
+- PvE + PvP encounters
+- Session recovery & reconnect support
+
+### Combat
+- Spacecraft dogfighting
+- Planet-side FPS/TPS combat
+- Capital ship combat & boarding
+- Server-validated damage and hit logic
+
+### AI
+- Server-controlled AI
+- Planet-aware enemies and creatures
+- Boarding defender AI with escalation logic
+
+### Galaxy War
+- Persistent galaxy state
+- Factions and territory influence
+- Seasonal progression
+- Outcome-driven universe changes
+
+### LiveOps (Planned)
+- Telemetry & metrics
+- Balance tuning hooks
+- Seasonal content and events
+- AI adaptation across seasons
+
+---
+
+## 📁 Project Structure (High-Level)# nestjs-supabase-auth
 
 ## Installation
 
