@@ -1,0 +1,282 @@
+📁 Project Structure (Complete)
+Copy code
+
+nestjs-supabase-auth/
+├── src/
+│   ├── auth/
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   ├── dto/
+│   │   │   ├── login.dto.ts
+│   │   │   └── signup.dto.ts
+│   │   └── strategies/
+│   │       └── jwt.strategy.ts
+│   ├── users/
+│   │   ├── users.controller.ts
+│   │   ├── users.module.ts
+│   │   └── users.service.ts
+│   ├── guards/
+│   │   ├── jwt-auth.guard.ts
+│   │   └── roles.guard.ts
+│   ├── decorators/
+│   │   ├── roles.decorator.ts
+│   │   └── user.decorator.ts
+│   ├── supabase/
+│   │   ├── supabase.module.ts
+│   │   └── supabase.service.ts
+│   ├── config/
+│   │   └── jwt.config.ts
+│   ├── app.module.ts
+│   └── main.ts
+├── .env.example
+├── package.json
+├── tsconfig.json
+└── README.md
+🔐 Environment Variables
+.env.example
+Copy code
+Env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_key
+
+JWT_SECRET=super_secret_key
+JWT_EXPIRES_IN=15m
+📦 Dependencies
+package.json
+Copy code
+Json
+{
+  "name": "nestjs-supabase-auth",
+  "version": "1.0.0",
+  "description": "NestJS + Supabase authentication backend",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/jwt": "^10.0.0",
+    "@nestjs/passport": "^10.0.0",
+    "passport": "^0.6.0",
+    "passport-jwt": "^4.0.1",
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1"
+  }
+}
+🚀 Application Bootstrap
+src/main.ts
+Copy code
+Ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
+
+async function bootstrap() {
+  dotenv.config();
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
+  await app.listen(3000);
+}
+bootstrap();
+src/app.module.ts
+Copy code
+Ts
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { SupabaseModule } from './supabase/supabase.module';
+
+@Module({
+  imports: [SupabaseModule, AuthModule, UsersModule],
+})
+export class AppModule {}
+🧩 Supabase Integration
+src/supabase/supabase.service.ts
+Copy code
+Ts
+import { Injectable } from '@nestjs/common';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+@Injectable()
+export class SupabaseService {
+  public client: SupabaseClient;
+
+  constructor() {
+    this.client = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_ANON_KEY!
+    );
+  }
+}
+src/supabase/supabase.module.ts
+Copy code
+Ts
+import { Module } from '@nestjs/common';
+import { SupabaseService } from './supabase.service';
+
+@Module({
+  providers: [SupabaseService],
+  exports: [SupabaseService],
+})
+export class SupabaseModule {}
+🔑 Authentication
+DTOs
+login.dto.ts
+Copy code
+Ts
+export class LoginDto {
+  email: string;
+  password: string;
+}
+signup.dto.ts
+Copy code
+Ts
+export class SignupDto {
+  email: string;
+  password: string;
+}
+auth.service.ts
+Copy code
+Ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { SupabaseService } from '../supabase/supabase.service';
+import { JwtService } from '@nestjs/jwt';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private supabase: SupabaseService,
+    private jwtService: JwtService,
+  ) {}
+
+  async signup(email: string, password: string) {
+    const { data, error } = await this.supabase.client.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async login(email: string, password: string) {
+    const { data, error } = await this.supabase.client.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error || !data.user) throw new UnauthorizedException();
+
+    const token = this.jwtService.sign({
+      sub: data.user.id,
+      email: data.user.email,
+    });
+
+    return { access_token: token };
+  }
+}
+auth.controller.ts
+Copy code
+Ts
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+import { SignupDto } from './dto/signup.dto';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('signup')
+  signup(@Body() dto: SignupDto) {
+    return this.authService.signup(dto.email, dto.password);
+  }
+
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto.email, dto.password);
+  }
+}
+auth.module.ts
+Copy code
+Ts
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { SupabaseModule } from '../supabase/supabase.module';
+
+@Module({
+  imports: [
+    SupabaseModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
+    }),
+  ],
+  providers: [AuthService],
+  controllers: [AuthController],
+})
+export class AuthModule {}
+🛡 Guards & Roles
+jwt-auth.guard.ts
+Copy code
+Ts
+import { AuthGuard } from '@nestjs/passport';
+
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+roles.decorator.ts
+Copy code
+Ts
+import { SetMetadata } from '@nestjs/common';
+export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+roles.guard.ts
+Copy code
+Ts
+import { CanActivate, ExecutionContext } from '@nestjs/common';
+
+export class RolesGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    return !!request.user;
+  }
+}
+👤 Users (Protected Example)
+users.controller.ts
+Copy code
+Ts
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+
+@Controller('users')
+export class UsersController {
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getProfile(@Req() req) {
+    return req.user;
+  }
+}
+users.module.ts
+Copy code
+Ts
+import { Module } from '@nestjs/common';
+import { UsersController } from './users.controller';
+
+@Module({
+  controllers: [UsersController],
+})
+export class UsersModule {}
+▶️ Run the Project
+Copy code
+Bash
+npm install
+cp .env.example .env
+npm run start:dev
+API:
+POST /api/auth/signup
+POST /api/auth/login
+GET /api/users/me (JWT protected)
