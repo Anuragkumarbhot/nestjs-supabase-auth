@@ -17,43 +17,15 @@
       "sourceMaps": true,
       "cwd": "${workspaceFolder}",
       "protocol": "inspector",
-      "console": "integratedTerminal"
-    }
-  ]
-}{
-  "version": "0.2.0",
-  "configurations": [
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
     {
-      "name": "Debug NestJS (TS Node)",
-      "type": "node",
+      "name": "Launch Chrome (Frontend)",
+      "type": "chrome",
       "request": "launch",
-      "runtimeArgs": [
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register"
-      ],
-      "args": [
-        "${workspaceFolder}/src/main.ts"
-      ],
-      "sourceMaps": true,
-      "cwd": "${workspaceFolder}",
-      "protocol": "inspector",
-      "console": "integratedTerminal"
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}"
     }
   ]
-}ñl{
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [Chrome ]
-        {
-            "type": "chrome",
-            "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}"
-        }
-    ]
 }
